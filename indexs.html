@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+ <html>
+    <head>
+        <title>手机轮播图</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+        <script src="index.min.js"></script>
+       <style>
+           *{
+               margin: 0;
+               padding: 0;
+               list-style: none;
+           } 
+           .classList{
+               width:100%;
+               height: 5rem;
+               position: relative
+           }
+           .classList .classBanner{
+               width: 100%;
+               height: 100%;
+               overflow: hidden;
+               position: relative
+           }
+           .classList .classBanner ul{
+               width: 1000%;
+               height: 100%;
+           }
+           .classList .classBanner ul li{
+               width:10rem;
+               float: left;
+               height:100%
+           }
+           .classList dl{
+               width: 100%;
+               position: absolute;
+               display: flex;
+               justify-content: center;
+               left: 50%;
+               bottom: 2%;
+               transform: translateX(-50%)
+           } 
+           .classList dd{
+               width: 0.6rem;
+               height: 0.6rem;
+               margin: 0 0.2rem;
+               border-radius: 50%;
+               background: #fff;
+           }  
+           .classList dd.active{
+               background: #000
+           }  
+       </style>
+    </head>
+   <body>
+       <div class="classList">
+            <div class="classBanner">
+                 <ul class="zhi">
+                     <li><img src="img/5.jpg" width="100%" height="100%"></li>
+                     <li><img src="img/1.jpg" width="100%" height="100%"></li>
+                     <li><img src="img/2.jpg" width="100%" height="100%"></li>
+                     <li><img src="img/3.jpg" width="100%" height="100%"></li>
+                     <li><img src="img/4.jpg" width="100%" height="100%"></li>
+                     <li><img src="img/5.jpg" width="100%" height="100%"></li>
+                     <li><img src="img/1.jpg" width="100%" height="100%"></li>
+                 </ul>
+            </div>
+            <dl>
+                <dd></dd>
+                <dd></dd>
+                <dd></dd>
+                <dd></dd>
+                <dd></dd>
+            </dl>
+       </div>
+   </body>
+ </html>
+ <script>
+     window.onload=function(){
+            let iClassList=document.querySelector(".classList");
+            let iUl=iClassList.querySelector(".zhi");
+            let aLi=iUl.querySelectorAll("li");
+            let iDl=iClassList.querySelector("dl");
+            let aDd=iClassList.querySelectorAll("dd");
+            let index=1;
+            let iWidth=-(iClassList.offsetWidth);
+            iUl.style.transform=`translateX(${index*iWidth}px)`;
+            iUl.X=-(index*iWidth);
+            aDd.forEach((item,i)=>{
+                item.addEventListener("touchend",function(ev){
+                    index=i+1;
+                    iUl.style.transition="transform 0.8s cubic-bezier(0.55, 0.055, 0.675, 0.19)";
+                    clearInterval(InTerTime);
+                    clearTimeout(OuTerTime);
+                    yundong(false);  
+                },false)
+            });
+            let InTerTime,OuTerTime;
+            aDd[index-1].className="active";
+            iUl.addEventListener("touchstart",function(ev){
+                 ev=ev||window.event;
+                this.startX=ev.changedTouches[0].clientX;
+                this.startTime=new Date().getTime();
+                if(this.transionsFlag){
+                    end()
+                }
+                let numArr=parseFloat(this.style.transform.match(/(\()(.*)(\))/)[2]);
+                this.X=numArr;
+                this.moveTime=null;
+                clearInterval(InTerTime);
+                clearTimeout(OuTerTime);
+            },false);
+            iUl.addEventListener("touchmove",function(ev){
+                 ev=ev||window.event;
+                this.moveX=ev.changedTouches[0].clientX;
+                this.disX=this.moveX-this.startX;
+                this.style.transform=`translateX(${this.X+this.disX}px)`;
+                this.moveTime=new Date().getTime();
+            },false);
+            iUl.addEventListener("touchend",function(ev){
+                 ev=ev||window.event;
+                this.endTime=new Date().getTime();
+                this.endX=ev.changedTouches[0].clientX;
+                this.style.transition="transform 0.8s cubic-bezier(0.55, 0.055, 0.675, 0.19)";
+                if(Math.abs((this.moveTime-this.startTime))<100||Math.abs((this.endX-this.startX))>Math.abs(iWidth/2)){
+                    this.transionsFlag=true;
+                    if((this.endX-this.startX)>0){
+                        index--;
+                        yundong(true);                
+                    }else{
+                        index++;
+                        yundong(false);                
+                    }
+                }else{
+                    if((this.endX>this.startX)){
+                        yundong(false);               
+                    }else{
+                        yundong(true);          
+                    }
+                }
+                ouTerTime=setTimeout(function(){
+                    time();
+                },3000);
+            },false);
+            //处理超出问题，已经设置运动
+            function yundong(flag){
+                let nowIndex;
+                for(var i=0;i<aDd.length;i++){
+                    aDd[i].className="";
+                }
+                if(flag){
+                    nowIndex=index-1<0?index-1+aDd.length:index-1;
+                }else{
+                    nowIndex=index-1>=aDd.length?index-1-aDd.length:index-1
+                }
+                aDd[nowIndex].className="active";        
+                iUl.style.transform=`translateX(${index*iWidth}px)`
+                iUl.addEventListener("transitionend",end,false);
+            }
+            //去除事件绑定
+            function removeEvent(el,event,fn){
+                    el.removeEventListener(event,fn,false);
+            }
+            //运动执行完毕后的回调函数
+            function end(){
+                iUl.transionsFlag=false;
+                removeEvent(this,"transitionend",end);
+                iUl.style.transition="none";
+                if(index==(aLi.length-1)){
+                    index=1;
+                    iUl.style.transform=`translateX(${index*iWidth}px)`
+                }else if(index==0){
+                    index=aLi.length-2;
+                    iUl.style.transform=`translateX(${index*iWidth}px)`
+                }
+            };
+            time();
+            //定时器函数
+            function time(){
+                InTerTime=setInterval(function(){
+                    index++;
+                    iUl.style.transition="transform 0.8s cubic-bezier(0.55, 0.055, 0.675, 0.19)";
+                    yundong(false);  
+                },5000);
+            }
+     };
+ </script>
