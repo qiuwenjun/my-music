@@ -234,6 +234,19 @@ module.exports = {
       "Host": "c.y.qq.com",
     }
   },  
+   //https://c.y.qq.com/soso/fcgi-bin/client_search_cp?ct=24&qqmusic_ver=1298&new_json=1&remoteplace=txt.yqq.center&searchid=48415332411845573&t=0&aggr=1&cr=1&catZhida=1&lossless=0&flag_qc=0&g_tk=5381&jsonpCallback=MusicJsonCallback7628362956681181&loginUin=0&hostUin=0&format=jsonp&inCharset=utf8&outCharset=utf-8&notice=0&platform=yqq&needNewCode=0
+  //参数  获取查询歌曲
+  "/qqSearch/":{                                 
+    target:'https://c.y.qq.com/soso/fcgi-bin/client_search_cp?ct=24&qqmusic_ver=1298&new_json=1&remoteplace=txt.yqq.center&searchid=48415332411845573&t=0&aggr=1&cr=1&catZhida=1&lossless=0&flag_qc=0&g_tk=5381&jsonpCallback=MusicJsonCallback7628362956681181&loginUin=0&hostUin=0&format=jsonp&inCharset=utf8&outCharset=utf-8&notice=0&platform=yqq&needNewCode=0',
+    "secure":true,                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 
+    "changeOrigin":true,
+    "pathRewrite":{
+        "^/qqSearch/":"",
+    },
+    "headers": { 
+      "User-Agent": "Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/66.0.3359.117 Safari/537.36",
+    }
+  },  
 },
 
     // Various Dev Server settings

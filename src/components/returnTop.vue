@@ -41,7 +41,7 @@
                 }else{
                      this.tween=1;
                 }
-           },false);
+           },false); 
        }
     }
 </script>

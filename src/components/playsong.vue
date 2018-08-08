@@ -454,8 +454,13 @@ export default {
                 "transform": 'translate3d(0px,-'+H+'px , 0px)'
             }
         },
-        nextPiece(index,flag){                            //下一首
+        nextPiece(index,flag,isPending){                            //下一首
+            if(isPending){        //这里是当你点击播放列表并且点击的是正在播放的歌曲
+               this.isPlay();
+               return 
+            }
             if(this.flag&&!flag) return;            //防止重复的去进行下一首
+            console.log(this.flag)
             if(index==this.songId.length||index<0) index=0;
             this.indexs=0;                  //歌词还原
             this.flag=true;                //播放状态还原
@@ -836,7 +841,7 @@ export default {
                             let re=/[a-z]*\((.*)\)/gi;
                             let json=JSON.parse(res.data.replace(re,($0,$1)=>$1));
                             json=json.lyric;
-                            if(json.includes("offset")){ //有歌词
+                            if(json&&json.includes("offset")){ //有歌词
                                 let split=/(.*)(\[offset&#58;0\]&#10;)(.*)/;
                                 json=json.replace(split,($0,$1,$2,$3)=>$3);   //通过split正则分割字符
                                 json=json.split("&#10;");      //讲歌词分段
@@ -895,7 +900,7 @@ export default {
                                 let arr=[],
                                 songList=res.data.cdlist[0].songlist,
                                 arrId=[];
-                                if(songList.length){
+                                if(songList&&songList.length){
                                     if(flag){   //下拉获取合并对象
                                         arr=this.nowSong().map(res=>JSON.stringify(res));
                                         arr.forEach(res=>arrId.push(res.songid));
@@ -953,7 +958,7 @@ export default {
                             let data=res.data.data.list;
                             let SongId=[];      //存储歌曲ID
                             let SongList=[];      //存储所有歌曲
-                            if(data.length){
+                            if(data&&data.length){
                                 for(let i=0;i<data.length;i++){
                                     SongId.push(data[i].songid);
                                     let json={
@@ -1063,11 +1068,13 @@ export default {
         this.showMusicList(false);   //查看歌曲列表是否存在        
         this.setConfig();
         Promise.all([this.getPlaysong(),this.getComment(Number(this["songId"][this.index])),this.getLyrics(Number(this["songId"][this.index]))]).then(res=>{
-            this.setPlaysong(res[0]);
+           	console.log(res)
+           	this.setPlaysong(res[0]);
             this.setComment(res[1]);
             this.setLyrics(res[2]);
             this.$store.commit("setHidden",false);
         },res=>{
+        	console.log(res)
             this.$store.commit("setHidden",false);
             this.nextPiece(++this.index);
         })

@@ -198,7 +198,7 @@ export default new vuex.Store({
         }
      },
      getters:{
-
+    
      },
      mutations:{
         setHidden(state,data){         //设置loading动画

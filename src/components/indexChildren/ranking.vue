@@ -317,7 +317,6 @@
                         },1500);
                         return "最后一页"
                     }
-                    console.log('请求')
                     this.activeId.sin=parseInt(this.activeId.sin)+parseInt(this.activeId.num);
                     this.setHash();   
                      this.getMusicClassify(this.activeId,true,true).then(res=>{

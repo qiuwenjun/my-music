@@ -225,7 +225,8 @@
                                 setStorage("playList",SongList.join("&"));
                                 this.setPlaylist(SongList);
                                return Promise.resolve({
-                                    songId:SongId.join(",")
+                                    songId:SongId.join(","),
+                                    singerid:config.singerid
                                });
                             }else{      //没有数据
                                     Toast("当前歌手没有歌曲!!!")

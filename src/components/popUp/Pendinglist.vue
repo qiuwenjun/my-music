@@ -6,7 +6,7 @@
                 </header>
                 <section class="pending_main" @scroll="scrollTop">
                     <ul class="mainlist">
-                            <li v-for="item,i in nowSong.playlist" @click="playSong(i)">
+                            <li v-for="item,i in nowSong.playlist" @click="playSong(i,item.songid==nowSongId)">
                                 <i :class="item.songid==nowSongId?nowSong.isPlay?'play':'stop':''"></i>
                                 <div>
                                     <h3>{{item.name}}</h3>
@@ -90,8 +90,12 @@
             iFcloseFn(ev){
                this.$emit("changeClose",false);
             },
-            playSong(index){
-              this.$emit("getNowIndex",index,true)
+            playSong(index,flag){
+                if(flag){
+                    this.$emit("getNowIndex",index,true,true);
+                }else{
+                    this.$emit("getNowIndex",index,true);
+                }
             },
             scrollTop(ev){
                 ev=ev||window.event;
@@ -99,7 +103,7 @@
                 let scrollTop=This.scrollTop;
                 let iHeight=This.offsetHeight;
                 let iUl=This.children[0];
-                if(this.isDown&&(scrollTop+iHeight)>=iUl.offsetHeight&&this.noData){
+                if(this.isDown&&(scrollTop+iHeight)>=iUl.offsetHeight-5&&this.noData){
                     this.isDropRequest=true;
                     this.$emit("Allowed_Request",undefined,false);
                 }

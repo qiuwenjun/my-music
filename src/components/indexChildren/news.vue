@@ -118,23 +118,33 @@
                   }
               }
           },
-          created(){
-             Promise.all([this.getBanner()]).then(res=>{
-                this.$store.commit("setHidden",false);
-             },res=>{
-                this.$store.commit("setHidden",false);
-                 Toast(res);
-             })   
-          },
+	    created(){
+	      	console.log("news created")
+	        this.flag=true;
+	        Promise.all([this.getBanner()]).then(res=>{
+	            this.$store.commit("setHidden",false);
+	        },res=>{
+	            this.$store.commit("setHidden",false);
+	            Toast(res);
+	        })   
+	    },
         mounted(){
             this.setHeight();
         },
         activated(){
+        	console.log("news activated")
               this.flag=false;
         },
-         deactivated(){
-              this.flag=true;
-          }
+	    deactivated(){
+	     	console.log("news deactivated")
+	        this.flag=true;
+	    },
+	    beforeDestroy(){
+	    	console.log(11111)
+	    },
+	    destroyed(){
+	    	console.log(2222)
+	    }
     }
 </script>
 

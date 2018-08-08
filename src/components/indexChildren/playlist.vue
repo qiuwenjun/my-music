@@ -87,6 +87,7 @@
              }
          },
          created(){
+         	console.log("play created")
              Promise.all([this.getMusicList()]).then(success=>{
                      this.$store.commit("setHidden",false);
              },error=>{
@@ -94,10 +95,12 @@
                      Toast(error)
              });
          },
-        activated(){            
+        activated(){   
+        	console.log("play activated")
             this.$root.$el.addEventListener("scroll",this.dropDown,false);    
         },
         deactivated(){
+        	console.log("play deactivated")
             this.$root.$el.removeEventListener("scroll",this.dropDown,false);    
         },
         updated(){   

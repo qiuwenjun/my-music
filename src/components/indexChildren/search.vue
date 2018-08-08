@@ -11,7 +11,7 @@
                 <!--显示获取焦点后的状态 -->
                 <div class="searchPage"  v-if="isSearch">     
                         <!--历史记录-->
-                        <div class="historical_record" v-if="flag&&!getResultsOf.length" v-show="history.length">
+                        <div class="historical_record" v-if="flag" v-show="history.length">
                             <ul>
                                 <li v-for="item,index in history" @click="searchRequest(item,$event)">
                                     <span></span>
@@ -27,17 +27,26 @@
                                 <div class="yResultsOf" v-if="getResultsOf.length">
                                     <ul>
                                         <li v-for="item,index in getResultsOf" @click="getDetail(item,index)">
-                                            <i class="inco" :style="!index?{'background':'url(https://y.gtimg.cn/music/photo_new/T002R68x68M000'+item.albummid+'.jpg?max_age=2592000) no-repeat center 0.33333333rem','background-size': '0.66666667rem 1.06666667rem;'}:''"></i>
-                                            <div class="">
-                                                <h3>{{item.songname}}</h3>
-                                                <span>{{maps(item.singer,undefined,'/')}}</span>
-                                            </div>
+                                             <div v-if="item.type">
+                                                <i class="inco"  :style="{borderRadius:'50%',background:'url('+item.Pic+') no-repeat center center',backgroundSize:'100% 100%'}"></i>
+                                                <div class="detaile">
+                                                    <h3>{{item.singerName}}</h3>
+                                                    <span>单曲:{{item.songNum}}     专辑:{{item.albumNum}}</span>
+                                                </div>
+                                           </div>
+                                           <div v-else>
+                                                <i class="inco"></i>
+                                                <div class="detaile">
+                                                    <h3>{{item.title}}</h3>
+                                                    <span>{{maps(item.singer,undefined,'/')}}</span>
+                                                </div>
+                                           </div>
                                         </li>
                                     </ul>
                                     <p v-show="!drop">
-                                        <img v-if="allPage!=page" src="../../assets/img/icon_loading.png">
-                                        <span v-if="allPage!=page"> 正在载入更多...</span>
-                                        <span v-if="allPage==page">没有更多相关数据了</span>
+                                        <img v-if="allPage>=page" src="../../assets/img/icon_loading.png">
+                                        <span v-if="allPage>=page"> 正在载入更多...</span>
+                                        <span v-if="allPage<page">没有更多相关数据了</span>
                                     </p>
                                 </div>
                                 <!--没有数据的情况-->
@@ -61,6 +70,7 @@
 <script>
 import {getStorage,setStorage} from "@/assets/js/common.js";
 import {mapActions,mapMutations} from "vuex";
+import {Toast} from "mint-ui";
 export default {
     name:'search',
     data(){
@@ -69,12 +79,12 @@ export default {
             isSearch:false,        //是否获取到焦点
             history:[],               //历史记录
             timer:null,             //倒计时定时器
-            flag:true,               //判断是否在查询
+            flag:true,               //判断是否查询结束
             allPage:-1,              //总页数
             page:-1,                 //页数
             n:20,                     //一次请求多少条数据       
             drop:true,             //判断是否要开始下拉加载了
-            height:'auto'         //设置该组件的高度
+            height:'auto',         //设置该组件的高度
        }
     },
     computed:{
@@ -136,20 +146,30 @@ export default {
                     el:this,
                     ...data
                 }).then(res=>{
+                    console.log(res)
                         if(res.status==200){
-                             let json={flag}
-                            json.data=res.data.data.song.list
+                            let re=/(\w+)\((.+)\)/;
+                            let json={flag}
+                            let data=JSON.parse(res.data.replace(re,($0,$1,$2)=>$2));
+                            json.data=data.data.song.list;
                             if(!flag){          //说明你是重新查询请求
-                                this.allPage=Math.ceil(res.data.data.song.totalnum/this.n);
-                                if(res.data.data.zhida.type){
-                                    json.data.unshift({
-                                        songname:res.data.data.zhida.albumname,
-                                        singer:[{name:res.data.data.zhida.singername}],
-                                        albummid:res.data.data.zhida.albumid
-                                    })
+                                this.allPage=Math.ceil(data.data.song.totalnum/this.n);
+                                if(data.data.zhida.type){
+                                    if(data.data.zhida.type==1){                   //歌手
+                                        json.data.unshift({
+                                            type:1,
+                                            singerName:data.data.zhida.zhida_singer.singerName,
+                                            Pic:data.data.zhida.zhida_singer.singerPic,
+                                            albumNum:data.data.zhida.zhida_singer.albumNum,
+                                            songNum:data.data.zhida.zhida_singer.songNum,
+                                            mvNum:data.data.zhida.zhida_singer.mvNum,
+                                            singerID:data.data.zhida.zhida_singer.singerID,
+                                        })
+                                    }
                                 }
                             }
                             this.flag=false;
+                            json.el=this;
                             this.setSearch(json)
                             return Promise.resolve();
                         }else{
@@ -184,7 +204,7 @@ export default {
                             let data=res.data.data.list;
                             let SongId=[];      //存储歌曲ID
                             let SongList=[];      //存储所有歌曲
-                            if(data.length){
+                            if(data&&data.length){
                                 for(let i=0;i<data.length;i++){
                                     SongId.push(data[i].songid);
                                     let json={
@@ -210,6 +230,43 @@ export default {
                         }
                     })
                 },
+                getSingerDetail(dispatch,config){                    //获取歌手详情
+                    return dispatch("getSingerDetail",{
+                        ...config,
+                        "_":new Date().getTime(),
+                        el:this,
+                    }).then(res=>{
+                        if(res.status==200){
+                            let data=res.data.data.list;
+                            let SongId=[];      //歌曲ID
+                            let SongList=[];    //歌曲列表
+                            if(data.length){        //有数据
+                                    for(let i=0;i<data.length;i++){
+                                        SongId.push(data[i].musicData.songid);
+                                        let json={
+                                            songid:data[i].musicData.songid,
+                                            name:data[i].musicData.songname,
+                                            singer:data[i].musicData.singer,
+                                            vid:data[i].musicData.vid,
+                                            songmid:data[i].musicData.songmid,
+                                        };
+                                        SongList.push(JSON.stringify(json));
+                                    }
+                                setStorage("playList",SongList.join("&"));
+                                this.setPlaylist(SongList);
+                               return Promise.resolve({
+                                    songId:SongId.join(","),
+                                    singerid:config.singerid
+                               });
+                            }else{      //没有数据
+                                    Toast("当前歌手没有歌曲!!!")
+                                    return Promise.reject();
+                            }
+                        }else{
+                            return Promise.reject();
+                        }
+                    })
+                }
         }),
         ...mapMutations({
             sethotSearch(commit,data){
@@ -296,8 +353,8 @@ export default {
             let scroll=(offsetHeight-ClientHeight)<0?0:offsetHeight-ClientHeight;
            if(scroll<=scrollTop&&this.drop){
                this.drop=false;
-               if(this.allPage!=this.page){
-                   this.page++;
+               this.page++;
+               if(this.allPage>=this.page){
                     this.getSearch({
                         w:this.search,
                         p:this.page,
@@ -311,14 +368,14 @@ export default {
            }
         },
         getDetail(item,index){        //跳转详情
-            if(index){    //获取单曲
-                let arr=[item.songid];
+            if(!item.type){    //获取单曲
+                let arr=[item.id];
                 setStorage("playList",JSON.stringify({
-                    songid:item.songid,
-                    name:item.songname,
+                    songid:item.id,
+                    name:item.title,
                     singer:item.singer,
-                    vid:item.vid,
-                    songmid:item.songmid,
+                    vid:item.mv.vid,
+                    songmid:item.file.media_mid,
                 }));
                 this.setPlaylist(arr);
                 this.$router.push({
@@ -329,8 +386,10 @@ export default {
                 });
             }else{          //获取专辑
                 if(this.source&&this.source["qqAlbum"])  this.source["qqAlbum"].cancel("操作被用户取消");
-                this.getAlbum({
-                    albumid:item.albummid
+                this.getSingerDetail({
+                    singerid:item.singerID,
+                    begin:0,
+                    num:15
                 }).then(query=>{
                     this.$router.push({path:'/playsong',query});
                     console.log("获取专辑成功")
@@ -491,9 +550,11 @@ export default {
                 .yResultsOf{
                     ul{
                         li{
-                            display: flex;
                             padding: 20/@rem 25/@rem;
                             border-bottom: 1px solid #ccc;
+                            >div{
+                                 display: flex;
+                            }
                             i{
                                 width: 80/@rem;
                                 height: 80/@rem;
@@ -501,7 +562,7 @@ export default {
                                 background-size: 50/@rem 80/@rem;
                                 overflow: hidden
                             }
-                            div{
+                            .detaile{
                                 display: flex;
                                 flex-direction: column;
                                 justify-content: center;
