@@ -96,11 +96,9 @@
              });
          },
         activated(){   
-        	console.log("play activated")
             this.$root.$el.addEventListener("scroll",this.dropDown,false);    
         },
         deactivated(){
-        	console.log("play deactivated")
             this.$root.$el.removeEventListener("scroll",this.dropDown,false);    
         },
         updated(){   

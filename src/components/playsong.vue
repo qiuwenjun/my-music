@@ -460,7 +460,6 @@ export default {
                return 
             }
             if(this.flag&&!flag) return;            //防止重复的去进行下一首
-            console.log(this.flag)
             if(index==this.songId.length||index<0) index=0;
             this.indexs=0;                  //歌词还原
             this.flag=true;                //播放状态还原
@@ -543,6 +542,7 @@ export default {
             let prevEl=ev.currentTarget.previousElementSibling;
             let aLi=prevEl.children;
             let h=0;
+            ev.stopPropagation();
             for(let i=0;i<aLi.length;i++){
                 h+=aLi[i].offsetHeight;
                 if(Math.abs(this.H)<=h){
